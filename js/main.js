@@ -540,6 +540,9 @@ function startGame() {
 
     // Start the game
     console.log(`Starting game with ${numPlayers} players, ${numAI} AI, Player 1: ${player1Name}, Player 2: ${player2Name}, Number of waves: ${numWaves}`);
+
+    // Create grid
+    createGameGrid.call(this);
 }
 
 function createGameGrid() {
