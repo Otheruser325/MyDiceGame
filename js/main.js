@@ -524,7 +524,59 @@ function startGame() {
     // Hide configuration UI
     hideSingleplayerConfig.call(this);
 
+    // Initialize game data
+    this.gameData = {
+        track: Array.from({ length: 5 }, () => Array.from({ length: 9 }, () => null)),
+        defenses: Array.from({ length: 5 }, () => Array.from({ length: 4 }, () => null)),
+        monsters: Array.from({ length: 5 }, () => Array.from({ length: 4 }, () => null)),
+        currentPlayerIndex: 0,
+        players: [player1Name, player2Name],
+        status: 'started',
+        turnCount: 0,
+        rolledSix: false,
+        waveCount: 0,
+        maxWaves: numWaves
+    };
+
     // Start the game
     console.log(`Starting game with ${numPlayers} players, ${numAI} AI, Player 1: ${player1Name}, Player 2: ${player2Name}, Number of waves: ${numWaves}`);
-    // Here you would initialize the game with the above configurations
+}
+
+function createGameGrid() {
+    const numRows = 5;
+    const numCols = 9;
+    const tileSize = 64; // Size of each tile, adjust as needed
+    const colors = ['#0000FF', '#00FF00', '#FF0000']; // Blue, Green, Red
+
+    // Create a group to hold the grid tiles
+    const gridGroup = this.add.group();
+
+    for (let row = 0; row < numRows; row++) {
+        for (let col = 0; col < numCols; col++) {
+            // Determine the color based on the column index
+            let color;
+            if (col < 3) {
+                color = colors[0]; // Blue
+            } else if (col < 6) {
+                color = colors[1]; // Green
+            } else {
+                color = colors[2]; // Red
+            }
+
+            // Create a tile with the specified color
+            const tile = this.add.sprite(col * tileSize, row * tileSize, null)
+                .setOrigin(0, 0)
+                .setDisplaySize(tileSize, tileSize)
+                .setTint(Phaser.Display.Color.HexStringToColor(color).color);
+
+            // Add the tile to the grid group
+            gridGroup.add(tile);
+
+            // Optionally, store the tile in the game data
+            this.gameData.track[row][col] = tile;
+        }
+    }
+
+    // Optionally, you can add gridGroup to a container or do other setup
+    // For now, it's sufficient to have it displayed
 }
