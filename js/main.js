@@ -406,5 +406,5 @@ function startLocalPlay() {
 }
 
 function showComingSoon() {
-    alert('This feature is coming soon!');
+    showAlert.call(this, 'This feature is coming soon.', 'warning');
 }
