@@ -25,6 +25,12 @@ let inputContainer;
 let sideInputField, luckFactorInputField, submitButton;
 let helpText, settingsText, changelogText;
 let sfxToggleButton;
+let numPlayersInput, numAIInput, player1NameInput, player2NameInput, numWavesSelect, startGameButton;
+let player1Name = "Player 1";
+let player2Name = "Player 2";
+let numPlayers = 1;
+let numAI = 1;
+let numWaves = 10;
 let sfxEnabled = true;
 
 function preload() {
@@ -41,7 +47,6 @@ function create() {
     this.diceSound = this.sound.add('diceSound');
     this.switchSound = this.sound.add('switchSound');
 
-    // Create main menu buttons
     this.playButton = createButton.call(this, 'Play', config.width / 2, config.height / 2 - 150, showGameModes);
     this.helpButton = createButton.call(this, 'Help', config.width / 2, config.height / 2 - 50, showHelp);
     this.settingsButton = createButton.call(this, 'Settings', config.width / 2, config.height / 2 + 50, showSettings);
@@ -49,8 +54,7 @@ function create() {
 
     backButton = createButton.call(this, 'Back', 10, 10, showMainMenu, '24px', '#f00').setVisible(false);
 
-    // Initialize buttons for game modes and new functionalities
-    singleplayerButton = createButton.call(this, 'Singleplayer', config.width / 2, config.height / 2 - 100, startSingleplayer).setVisible(false);
+    singleplayerButton = createButton.call(this, 'Singleplayer', config.width / 2, config.height / 2 - 100, showSingleplayerConfig).setVisible(false);
     playLocalButton = createButton.call(this, 'Play Local', config.width / 2, config.height / 2 - 50, startLocalPlay).setVisible(false);
     multiplayerButton = createButton.call(this, 'Multiplayer', config.width / 2, config.height / 2, showComingSoon).setVisible(false);
 
@@ -73,8 +77,10 @@ function create() {
 
     createDiceInputs.call(this);
 
-    document.getElementById('splash-screen').style.display = 'none';
+    // Create singleplayer configuration inputs
+    createSingleplayerConfig.call(this);
 
+    document.getElementById('splash-screen').style.display = 'none';
     document.getElementById('back-button').addEventListener('click', () => {
         showMainMenu.call(this);
     });
@@ -407,4 +413,118 @@ function startLocalPlay() {
 
 function showComingSoon() {
     showAlert.call(this, 'This feature is coming soon.', 'warning');
+}
+
+function createSingleplayerConfig() {
+    const uiContainer = document.getElementById('ui-container');
+    if (!uiContainer) {
+        console.error('UI Container element not found');
+        return;
+    }
+
+    // Create and append input fields and buttons for configuration
+    numPlayersInput = createDOMInputField('Number of Players (1 or 2)', 'numPlayersInput');
+    numPlayersInput.value = numPlayers; // Set default value
+    numPlayersInput.addEventListener('input', (e) => {
+        numPlayers = parseInt(e.target.value, 10);
+        if (numPlayers < 1) numPlayers = 1;
+        if (numPlayers > 2) numPlayers = 2;
+        e.target.value = numPlayers;
+        player2NameInput.style.display = (numPlayers === 1 && numAI === 1) ? 'none' : 'block';
+    });
+
+    numAIInput = createDOMInputField('Number of AI (0 or 1)', 'numAIInput');
+    numAIInput.value = numAI; // Set default value
+    numAIInput.addEventListener('input', (e) => {
+        numAI = parseInt(e.target.value, 10);
+        if (numAI < 0) numAI = 0;
+        if (numAI > 1) numAI = 1;
+        e.target.value = numAI;
+    });
+
+    player1NameInput = createDOMInputField('Player 1 Name', 'player1NameInput');
+    player1NameInput.value = player1Name; // Set default value
+    player1NameInput.addEventListener('input', (e) => {
+        player1Name = e.target.value.trim() || 'Player 1';
+    });
+
+    player2NameInput = createDOMInputField('Player 2 Name', 'player2NameInput');
+    player2NameInput.value = player2Name; // Set default value
+    player2NameInput.style.display = (numPlayers === 1 && numAI === 1) ? 'none' : 'block';
+    player2NameInput.addEventListener('input', (e) => {
+        player2Name = e.target.value.trim() || 'Player 2';
+    });
+
+    numWavesSelect = document.createElement('select');
+    numWavesSelect.id = 'numWavesSelect';
+    numWavesSelect.style.marginBottom = '10px';
+    
+    const wavesOptions = [10, 15, 20, 25, 9999];
+    wavesOptions.forEach(value => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = (value === 9999) ? 'Unlimited' : value;
+        if (value === numWaves) option.selected = true;
+        numWavesSelect.appendChild(option);
+    });
+
+    numWavesSelect.addEventListener('change', (e) => {
+        numWaves = parseInt(e.target.value, 10);
+    });
+
+    startGameButton = createDOMButton('Start Game!', startGame, 'startGameButton');
+    
+    // Add elements to the DOM
+    uiContainer.appendChild(numPlayersInput);
+    uiContainer.appendChild(numAIInput);
+    uiContainer.appendChild(player1NameInput);
+    uiContainer.appendChild(player2NameInput);
+    uiContainer.appendChild(numWavesSelect);
+    uiContainer.appendChild(startGameButton);
+
+    // Hide input fields initially
+    hideSingleplayerConfig();
+}
+
+function hideSingleplayerConfig() {
+    if (numPlayersInput) numPlayersInput.style.display = 'none';
+    if (numAIInput) numAIInput.style.display = 'none';
+    if (player1NameInput) player1NameInput.style.display = 'none';
+    if (player2NameInput) player2NameInput.style.display = 'none';
+    if (numWavesSelect) numWavesSelect.style.display = 'none';
+    if (startGameButton) startGameButton.style.display = 'none';
+}
+
+function showSingleplayerConfig() {
+    hideAllUI.call(this);
+    createSingleplayerConfig.call(this); // Ensure inputs are created
+    if (numPlayersInput) numPlayersInput.style.display = 'block';
+    if (numAIInput) numAIInput.style.display = 'block';
+    if (player1NameInput) player1NameInput.style.display = 'block';
+    if (player2NameInput) player2NameInput.style.display = 'block';
+    if (numWavesSelect) numWavesSelect.style.display = 'block';
+    if (startGameButton) startGameButton.style.display = 'block';
+    backButton.setVisible(true);
+}
+
+function startGame() {
+    // Validate configurations
+    if (numPlayers < 1 || numPlayers > 2) {
+        alert('Number of players must be 1 or 2.');
+        return;
+    }
+    if (numAI < 0 || numAI > 1) {
+        alert('Number of AI must be 0 or 1.');
+        return;
+    }
+    if (numPlayers === 2 && numAI === 1) {
+        player2Name = 'AI';
+    }
+
+    // Hide configuration UI
+    hideSingleplayerConfig.call(this);
+
+    // Start the game
+    console.log(`Starting game with ${numPlayers} players, ${numAI} AI, Player 1: ${player1Name}, Player 2: ${player2Name}, Number of waves: ${numWaves}`);
+    // Here you would initialize the game with the above configurations
 }
